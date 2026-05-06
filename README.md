@@ -1,9 +1,10 @@
 # 📊 Scoring Crédit — Pipeline ML Bancaire (Bâle II / Bâle III)
 
-Pipeline complet de machine learning pour le calcul de **Probability of Default (PD)**, inspiré des modèles de risque de crédit utilisés en banque de détail. Couvre l'intégralité du cycle : feature engineering → entraînement → validation croisée → métriques réglementaires → scoring en production.
+Pipeline complet de machine learning pour le calcul de **Probability of Default (PD)**, sur le **German Credit Dataset (UCI)**. Couvre l'intégralité du cycle : preprocessing → entraînement → rééquilibrage SMOTE → métriques réglementaires → scoring en production.
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-Pipeline%20%7C%20CV%205--fold-orange)
+![XGBoost](https://img.shields.io/badge/XGBoost-SMOTE-red)
 ![Métrique](https://img.shields.io/badge/Métrique-AUC%20%7C%20Gini%20%7C%20KS-green)
 
 ---
@@ -14,16 +15,14 @@ Ce pipeline implémente les **mêmes étapes qu'un modèle de scoring bancaire r
 
 | Étape | Implémentation |
 |-------|---------------|
-| Feature engineering | 10 variables (ratio endettement, historique crédit, type emploi...) |
-| Preprocessing | `sklearn.Pipeline` — imputation, encodage, normalisation en chaîne |
-| Modélisation | Logistic Regression, Random Forest, Gradient Boosting |
-| Validation | Stratified K-Fold 5 splits — évite le data leakage |
+| Dataset | **German Credit (UCI via OpenML)** — 1000 clients, 20 variables réelles |
+| Preprocessing | `ColumnTransformer` — imputation, OrdinalEncoder, StandardScaler |
+| Modélisation | Logistic Regression, Random Forest, Gradient Boosting, **XGBoost** |
+| Rééquilibrage | **SMOTE** sur les données d'entraînement (30 % de défauts) |
+| Validation | Stratified K-Fold 5 splits — zéro data leakage |
 | Métriques Bâle II | **AUC-ROC, Gini, KS-Statistic** — standard industrie |
 | Scoring production | Nouvelle instance → PD% + score 0–1000 + décision |
 | Persistance | Sauvegarde joblib du meilleur modèle |
-
-> **Pourquoi des données synthétiques ?**  
-> Les données de crédit réelles sont couvertes par le secret bancaire et le RGPD. Utiliser un générateur calibré sur des distributions réelles (lognormale pour les revenus, beta pour le taux d'endettement, fonction logistique pour la PD) est la pratique standard dans les équipes de modélisation quand les données de production ne sont pas accessibles hors du SI bancaire. Ce projet démontre le **pipeline**, pas le dataset.
 
 ---
 
@@ -31,13 +30,14 @@ Ce pipeline implémente les **mêmes étapes qu'un modèle de scoring bancaire r
 
 | Modèle | AUC-ROC | Gini | KS-Statistic |
 |--------|---------|------|-------------|
-| **Logistic Regression** | **0.797** | **0.594** | **0.498** |
-| Random Forest | 0.790 | 0.580 | 0.478 |
-| Gradient Boosting | ~0.785 | ~0.570 | ~0.465 |
+| **Random Forest** | **0.804** | **0.608** | **0.47** |
+| XGBoost + SMOTE | 0.802 | 0.604 | 0.46 |
+| Gradient Boosting | 0.786 | 0.572 | 0.44 |
+| Logistic Regression | 0.740 | 0.481 | 0.38 |
 
 **Lecture des métriques :**  
-- **AUC-ROC** : capacité discriminante globale (1 = parfait, 0.5 = aléatoire). Seuil acceptable Bâle II : > 0.70  
-- **Gini = 2×AUC−1** : indicateur standard banques françaises (Gini > 0.50 = bon modèle)  
+- **AUC-ROC** : capacité discriminante globale (1 = parfait, 0.5 = aléatoire). Seuil acceptable Bâle II : > 0.70 ✅  
+- **Gini = 2×AUC−1** : indicateur standard banques françaises (Gini > 0.50 = bon modèle) ✅  
 - **KS-Statistic** : écart max entre distribution bons/mauvais payeurs — mesure le pouvoir de tri au seuil optimal
 
 ---
@@ -60,18 +60,20 @@ Ce pipeline implémente les **mêmes étapes qu'un modèle de scoring bancaire r
 
 ---
 
-## 🔧 Variables du modèle
+## 🔧 Dataset — German Credit (UCI)
 
-| Variable | Description | Sens économique |
-|----------|-------------|----------------|
-| `age` | Âge du client | Profil de risque selon cycle de vie |
-| `revenu_annuel` | Revenu brut annuel (EUR) | Capacité de remboursement |
-| `anciennete_emp` | Ancienneté emploi (années) | Stabilité professionnelle |
-| `ratio_endett` | Taux d'endettement (0–1) | Variable centrale Bâle II |
-| `historique_cb` | Score historique crédit (300–850) | Comportement passé |
-| `type_emploi` | CDI / CDD / Indépendant / Retraite | Stabilité des revenus |
-| `nb_credits_act` | Nombre de crédits en cours | Exposition totale |
-| `montant_credit` | Montant demandé (EUR) | LGD proxy |
+20 variables réelles collectées sur 1000 clients allemands (Statlog German Credit Data, 1994) :
+
+| Variable (exemple) | Description | Sens économique |
+|--------------------|-------------|----------------|
+| `checking_status` | Solde compte courant | Liquidité immédiate |
+| `duration` | Durée du crédit (mois) | Exposition temporelle |
+| `credit_history` | Historique de remboursement | Comportement passé |
+| `credit_amount` | Montant demandé (DM) | LGD proxy |
+| `savings_status` | Épargne disponible | Capacité absorption chocs |
+| `employment` | Ancienneté emploi | Stabilité des revenus |
+| `age` | Âge du client | Profil de risque cycle de vie |
+| `housing` | Statut logement | Stabilité patrimoniale |
 | `duree_credit` | Durée (mois) | Exposition temporelle |
 | `possession_bien` | Propriétaire ? (0/1) | Collatéral implicite |
 
