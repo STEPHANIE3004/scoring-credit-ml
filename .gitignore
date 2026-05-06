@@ -3,4 +3,5 @@ __pycache__/
 *.pkl
 data/
 *.png
+!docs/*.png
 .ipynb_checkpoints/
