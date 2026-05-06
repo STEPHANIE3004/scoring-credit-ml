@@ -1,83 +1,83 @@
-# Scoring Credit - Pipeline ML Bancaire
+# 📊 Scoring Crédit — Pipeline ML Bancaire
 
-Pipeline complet de machine learning pour le scoring de credit (Probability of Default), inspire des modeles Bale II / Bale III utilises dans les banques.
+Pipeline complet de machine learning pour le scoring de crédit (Probability of Default), inspiré des modèles Bâle II / Bâle III utilisés dans les banques.
 
-## Fonctionnalites
+## 📸 Aperçu
 
-- Generation de donnees synthetiques realistes (5 000 clients)
-- Preprocessing : encodage, imputation, normalisation
-- 3 modeles : Logistic Regression, Random Forest, Gradient Boosting
-- Metriques bancaires : AUC-ROC, Gini, KS-Statistic
-- Validation croisee stratifiee (5-fold)
-- Rapport graphique complet (6 visualisations)
-- Scoring en temps reel d'un nouveau client
-- Sauvegarde des modeles (joblib)
+![Rapport de Performance](docs/screenshot_scoring.png)
 
-## Resultats obtenus
+## 🎯 Fonctionnalités
 
-| Modele | AUC | Gini | KS |
+- Génération de 5 000 clients synthétiques réalistes (revenus, endettement, historique crédit...)
+- Preprocessing : encodage, imputation, normalisation (Pipeline sklearn)
+- 3 modèles entraînés : Logistic Regression, Random Forest, Gradient Boosting
+- Métriques bancaires : **AUC-ROC, Gini, KS-Statistic**
+- Validation croisée stratifiée 5-fold
+- Rapport graphique 6 panneaux (courbes ROC, matrice confusion, importance variables...)
+- Scoring en temps réel d'un nouveau client
+- Sauvegarde du meilleur modèle (joblib)
+
+## 📈 Résultats obtenus
+
+| Modèle | AUC | Gini | KS |
 |--------|-----|------|----|
-| Logistic Regression | 0.735 | 0.470 | 0.418 |
-| Random Forest | 0.687 | 0.375 | 0.351 |
-| Gradient Boosting | 0.697 | 0.393 | 0.314 |
+| **Logistic Regression** | **0.797** | **0.594** | **0.498** |
+| Random Forest | 0.790 | 0.580 | 0.478 |
 
-## Structure
+## 🗂️ Structure
 
 ```
 scoring-credit-ml/
-├── scoring_credit.py    # Pipeline principal
+├── scoring_credit.py      # Pipeline principal
 ├── data/
-│   └── credit_data.csv  # Dataset synthetique (genere auto)
+│   └── credit_data.csv    # Dataset synthétique (généré auto)
 ├── models/
-│   └── *.pkl            # Modeles sauvegardes
+│   └── *.pkl              # Modèles sauvegardés
+├── docs/
+│   └── screenshot_scoring.png
 ├── requirements.txt
 └── README.md
 ```
 
-## Installation
+## ⚙️ Installation
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Utilisation
+## 🚀 Utilisation
 
 ```bash
 python scoring_credit.py
 ```
 
-Le script :
-1. Genere 5 000 clients synthetiques
-2. Entraine les 3 modeles
-3. Affiche les metriques et le rapport de classification
-4. Sauvegarde le meilleur modele
-5. Evalue un client exemple
-6. Genere `scoring_credit_rapport.png`
+Le script génère automatiquement les données, entraîne les modèles, affiche les métriques et ouvre le rapport graphique.
 
-## Variables utilisees
+## 💡 Exemple de scoring client
+
+```
+[DEMO] Scoring d'un nouveau client :
+  Probabilite de defaut : 5.23%
+  Score credit          : 947/1000
+  Niveau de risque      : FAIBLE
+  Decision              : ACCORDE
+```
+
+## 🏦 Variables utilisées
 
 | Variable | Description |
 |----------|-------------|
-| age | Age du client (18-75 ans) |
-| revenu_annuel | Revenu brut annuel (EUR) |
-| anciennete_emp | Anciennete dans l'emploi (annees) |
-| nb_credits_act | Nombre de credits actifs |
-| ratio_endett | Taux d'endettement (0-1) |
-| historique_cb | Score historique credit (300-850) |
-| montant_credit | Montant demande (EUR) |
-| duree_credit | Duree en mois |
-| type_emploi | CDI / CDD / Independant / Retraite |
-| possession_bien | Proprietaire immobilier (0/1) |
+| `age` | Âge du client |
+| `revenu_annuel` | Revenu brut annuel (EUR) |
+| `ratio_endett` | Taux d'endettement (0-1) |
+| `historique_cb` | Score historique crédit (300-850) |
+| `type_emploi` | CDI / CDD / Indépendant / Retraite |
+| `montant_credit` | Montant demandé (EUR) |
 
-## Technologies
+## 🛠️ Technologies
 
-- Python 3.x
-- scikit-learn (ML pipelines)
-- pandas / numpy (data)
-- matplotlib (visualisation)
-- joblib (serialisation)
+**Python 3** · **scikit-learn** · **pandas** · **numpy** · **matplotlib** · **joblib**
 
-## Auteure
+## 👩‍💻 Auteure
 
-Vanelle Stephanie MANGOUA DJOUSSEU
-Etudiante en IA & Systemes Embarques - Recherche d'alternance
+**Vanelle Stéphanie MANGOUA DJOUSSEU** — Recherche d'alternance en IA & Systèmes Embarqués

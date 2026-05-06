@@ -9,7 +9,7 @@ Metriques : AUC-ROC, Gini, KS-Statistic, matrice de confusion
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use("Agg")
+# matplotlib.use("Agg")  # desactive pour affichage fenetre
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import warnings
