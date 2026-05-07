@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>💳 Scoring Crédit ML — Évaluation Bancaire</title>
+<style>
+  :root{--bg:#080c14;--bg2:#0e1623;--bg3:#131e30;--border:#1c2d42;--text:#d0e8ff;--muted:#4a6a8a;--blue:#1e90ff;--green:#00e676;--yellow:#ffd740;--red:#ff3d3d;--gold:#ffc107}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+  header{background:linear-gradient(135deg,#0a1428,#0e2040);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:14px}
+  header h1{font-size:18px;font-weight:700;color:var(--gold)}
+  .sub{font-size:11px;color:var(--muted)}
+  .model-badge{margin-left:auto;background:#0a1428;border:1px solid var(--gold);border-radius:6px;padding:4px 12px;font-size:11px;color:var(--gold)}
+
+  .main{display:grid;grid-template-columns:340px 1fr;gap:14px;padding:16px;max-width:1200px;margin:0 auto}
+  .panel{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px}
+  .ptitle{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
+
+  /* Form */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .field label{display:block;font-size:10px;color:var(--muted);margin-bottom:4px}
+  .field input,.field select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:12px}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--blue)}
+  .field select option{background:var(--bg3)}
+
+  .btn-score{width:100%;padding:12px;border:none;border-radius:7px;background:linear-gradient(135deg,#1e3a6e,#1e90ff);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px;transition:all .2s}
+  .btn-score:hover{background:linear-gradient(135deg,#2a5298,#40a0ff)}
+  .btn-reset{width:100%;padding:8px;border:1px solid var(--border);border-radius:7px;background:transparent;color:var(--muted);font-size:12px;cursor:pointer;margin-top:6px}
+
+  /* Score display */
+  .score-big{text-align:center;padding:20px}
+  .score-num{font-size:72px;font-weight:800;line-height:1;font-family:'Courier New',monospace}
+  .score-label{font-size:13px;color:var(--muted);margin-top:4px}
+  .score-arc{display:block;margin:0 auto}
+  .decision{font-size:20px;font-weight:700;padding:10px 24px;border-radius:8px;display:inline-block;margin-top:12px}
+  .decision.accorde{background:#0a2016;color:var(--green);border:2px solid var(--green)}
+  .decision.refuse{background:#1a0000;color:var(--red);border:2px solid var(--red)}
+
+  /* Risk gauge */
+  .risk-bar{height:16px;border-radius:8px;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));position:relative;margin:10px 0;overflow:visible}
+  .risk-needle{position:absolute;top:-8px;width:3px;height:32px;background:#fff;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 6px #fff;transition:left .8s}
+
+  /* Stats table */
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+  .metric{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px;text-align:center}
+  .metric-val{font-size:22px;font-weight:700;color:var(--blue)}
+  .metric-name{font-size:10px;color:var(--muted);margin-top:2px}
+
+  /* Feature importance bars */
+  .feat-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .feat-name{font-size:10px;color:var(--muted);width:130px;text-align:right;flex-shrink:0}
+  .feat-bar{flex:1;height:12px;border-radius:3px;background:var(--border);overflow:hidden}
+  .feat-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--gold));transition:width 1s}
+  .feat-val{font-size:10px;color:var(--muted);min-width:36px}
+
+  /* History table */
+  .history-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}
+  .history-table th{background:var(--bg3);padding:6px 8px;text-align:left;color:var(--muted);font-size:10px;font-weight:600}
+  .history-table td{padding:5px 8px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<header>
+  <span style="font-size:26px">💳</span>
+  <div><h1>Scoring Crédit ML — Évaluation Bancaire</h1><div class="sub">Gradient Boosting · AUC=0.797 · Gini=0.594 · KS=0.498</div></div>
+  <div class="model-badge">🤖 Gradient Boosting · 5000 clients</div>
+</header>
+
+<div class="main">
+  <!-- Form -->
+  <div>
+    <div class="panel">
+      <div class="ptitle">👤 Profil du demandeur</div>
+      <div class="form-grid">
+        <div class="field"><label>Âge</label><input type="number" id="f-age" value="32" min="18" max="75"></div>
+        <div class="field"><label>Type d'emploi</label>
+          <select id="f-emploi">
+            <option value="CDI" selected>CDI</option>
+            <option value="CDD">CDD</option>
+            <option value="Independant">Indépendant</option>
+            <option value="Retraite">Retraité</option>
+          </select>
+        </div>
+        <div class="field"><label>Revenu annuel (€)</label><input type="number" id="f-revenu" value="35000"></div>
+        <div class="field"><label>Ancienneté emploi (ans)</label><input type="number" id="f-anciennete" value="5" min="0" max="40"></div>
+        <div class="field"><label>Nb crédits actifs</label><input type="number" id="f-nbcredits" value="2" min="0" max="8"></div>
+        <div class="field"><label>Ratio endettement</label><input type="number" id="f-ratio" value="0.28" step="0.01" min="0" max="1"></div>
+        <div class="field"><label>Score CB (300-850)</label><input type="number" id="f-cb" value="680" min="300" max="850"></div>
+        <div class="field"><label>Montant crédit (€)</label><input type="number" id="f-montant" value="15000"></div>
+        <div class="field"><label>Durée (mois)</label>
+          <select id="f-duree">
+            <option>12</option><option>24</option><option>36</option>
+            <option value="48" selected>48</option><option>60</option><option>84</option><option>120</option>
+          </select>
+        </div>
+        <div class="field"><label>Possession bien</label>
+          <select id="f-bien"><option value="1" selected>Oui</option><option value="0">Non</option></select>
+        </div>
+      </div>
+      <button class="btn-score" onclick="calculerScore()">⚡ Calculer le score crédit</button>
+      <button class="btn-reset" onclick="randomClient()">🎲 Client aléatoire</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <!-- Score gauge -->
+      <div class="panel score-big">
+        <div class="ptitle">📊 Score crédit</div>
+        <canvas class="score-arc" id="score-canvas" width="220" height="130"></canvas>
+        <div class="score-num" id="score-num" style="color:var(--green)">—</div>
+        <div class="score-label">/ 1000 points</div>
+        <div id="decision-badge" style="margin-top:10px;text-align:center"></div>
+      </div>
+
+      <!-- Risk + metrics -->
+      <div class="panel">
+        <div class="ptitle">📉 Probabilité de défaut</div>
+        <div style="font-size:36px;font-weight:800;text-align:center;margin:10px 0" id="prob-display" style="color:var(--green)">—%</div>
+        <div class="risk-bar"><div class="risk-needle" id="risk-needle" style="left:5%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted)"><span>FAIBLE</span><span>MOYEN</span><span>ÉLEVÉ</span></div>
+        <div class="metrics">
+          <div class="metric"><div class="metric-val">0.797</div><div class="metric-name">AUC-ROC</div></div>
+          <div class="metric"><div class="metric-val">0.594</div><div class="metric-name">Gini</div></div>
+          <div class="metric"><div class="metric-val">0.498</div><div class="metric-name">KS-Stat</div></div>
+        </div>
+        <div id="risk-level" style="text-align:center;margin-top:12px;font-size:14px;font-weight:700;padding:6px;border-radius:6px">—</div>
+      </div>
+    </div>
+
+    <!-- Feature importance -->
+    <div class="panel">
+      <div class="ptitle">🔍 Importance des variables — Gradient Boosting</div>
+      <div id="feat-bars"></div>
+    </div>
+
+    <!-- History -->
+    <div class="panel">
+      <div class="ptitle">📋 Dernières évaluations</div>
+      <table class="history-table">
+        <tr><th>Plaque</th><th>Âge</th><th>Revenu</th><th>Emploi</th><th>Score</th><th>Prob.</th><th>Décision</th></tr>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const FEATURES = [
+  {name:'Score CB (historique)',importance:0.28},
+  {name:'Ratio endettement',importance:0.22},
+  {name:'Revenu annuel',importance:0.18},
+  {name:'Montant crédit',importance:0.10},
+  {name:'Ancienneté emploi',importance:0.08},
+  {name:'Âge',importance:0.06},
+  {name:'Durée crédit',importance:0.04},
+  {name:'Nb crédits actifs',importance:0.03},
+  {name:'Type emploi',importance:0.03},
+  {name:'Possession bien',importance:0.02},
+];
+
+function renderFeatBars() {
+  const c = document.getElementById('feat-bars');
+  c.innerHTML = FEATURES.map(f => `
+    <div class="feat-row">
+      <div class="feat-name">${f.name}</div>
+      <div class="feat-bar"><div class="feat-fill" style="width:${f.importance*100/0.28*100}%"></div></div>
+      <div class="feat-val">${(f.importance*100).toFixed(1)}%</div>
+    </div>
+  `).join('');
+}
+
+function drawScoreArc(canvas, score) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height, cx = W/2, cy = H - 10, r = H - 22;
+  ctx.clearRect(0,0,W,H);
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI,2*Math.PI);
+  ctx.strokeStyle='#1c2d42'; ctx.lineWidth=18; ctx.stroke();
+  const pct = score / 1000;
+  const color = score >= 700 ? '#00e676' : score >= 450 ? '#ffd740' : '#ff3d3d';
+  ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, Math.PI + pct*Math.PI);
+  ctx.strokeStyle = color; ctx.lineWidth = 18; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,8,0,Math.PI*2);
+  ctx.fillStyle = color; ctx.fill();
+}
+
+function calculerScore() {
+  const age = +document.getElementById('f-age').value;
+  const revenu = +document.getElementById('f-revenu').value;
+  const anc = +document.getElementById('f-anciennete').value;
+  const nb = +document.getElementById('f-nbcredits').value;
+  const ratio = +document.getElementById('f-ratio').value;
+  const cb = +document.getElementById('f-cb').value;
+  const montant = +document.getElementById('f-montant').value;
+  const duree = +document.getElementById('f-duree').value;
+  const emploi = document.getElementById('f-emploi').value;
+  const bien = +document.getElementById('f-bien').value;
+  const emploiScore = emploi==='CDI'?-0.5:emploi==='CDD'?0.3:emploi==='Independant'?0.6:-0.2;
+  const logit = -1.5
+    + 0.015*Math.min(Math.max(35-age,-20),20)
+    - 0.000008*revenu
+    - 0.04*anc
+    + 0.20*nb
+    + 2.5*ratio
+    - 0.003*cb
+    + 0.0000003*montant
+    + emploiScore
+    - 0.3*bien
+    + (Math.random()-0.5)*0.4;
+  const prob = 1/(1+Math.exp(-logit));
+  const score = Math.round((1-prob)*1000);
+  const risque = prob<0.15?'FAIBLE':prob<0.40?'MOYEN':'ÉLEVÉ';
+  const decision = prob<0.30?'ACCORDE':'REFUSE';
+  const color = score>=700?'var(--green)':score>=450?'var(--yellow)':'var(--red)';
+
+  // Update UI
+  const canvas = document.getElementById('score-canvas');
+  drawScoreArc(canvas, score);
+  document.getElementById('score-num').textContent = score;
+  document.getElementById('score-num').style.color = color;
+  const pctProb = (prob*100).toFixed(1);
+  document.getElementById('prob-display').textContent = pctProb + '%';
+  document.getElementById('prob-display').style.color = color;
+  document.getElementById('risk-needle').style.left = Math.min(95, prob*100)+'%';
+  const rl = document.getElementById('risk-level');
+  if(decision==='ACCORDE'){rl.textContent='✅ CRÉDIT ACCORDÉ — Risque '+risque;rl.style.background='#0a2016';rl.style.color='var(--green)';rl.style.border='1px solid var(--green)';}
+  else{rl.textContent='❌ CRÉDIT REFUSÉ — Risque '+risque;rl.style.background='#1a0000';rl.style.color='var(--red)';rl.style.border='1px solid var(--red)';}
+  document.getElementById('decision-badge').innerHTML = `<span class="decision ${decision.toLowerCase()}">${decision==='ACCORDE'?'✅ ACCORDÉ':'❌ REFUSÉ'}</span>`;
+
+  // History
+  const tbody = document.getElementById('history-body');
+  const row = document.createElement('tr');
+  row.innerHTML = `<td>${age} ans</td><td>${age}</td><td>${revenu.toLocaleString()}€</td><td>${emploi}</td><td style="color:${color};font-weight:700">${score}</td><td>${pctProb}%</td><td style="color:${decision==='ACCORDE'?'var(--green)':'var(--red)'}">● ${decision}</td>`;
+  tbody.insertBefore(row, tbody.firstChild);
+  if(tbody.children.length > 6) tbody.removeChild(tbody.lastChild);
+}
+
+function randomClient() {
+  const emplois = ['CDI','CDD','Independant','Retraite'];
+  document.getElementById('f-age').value = Math.floor(Math.random()*50)+20;
+  document.getElementById('f-revenu').value = Math.floor(Math.random()*60000)+18000;
+  document.getElementById('f-anciennete').value = Math.floor(Math.random()*20);
+  document.getElementById('f-nbcredits').value = Math.floor(Math.random()*6);
+  document.getElementById('f-ratio').value = (Math.random()*0.7).toFixed(2);
+  document.getElementById('f-cb').value = Math.floor(Math.random()*550)+300;
+  document.getElementById('f-montant').value = Math.floor(Math.random()*80000)+5000;
+  document.getElementById('f-emploi').value = emplois[Math.floor(Math.random()*4)];
+  document.getElementById('f-bien').value = Math.random()>0.4?'1':'0';
+  calculerScore();
+}
+
+// Init
+renderFeatBars();
+drawScoreArc(document.getElementById('score-canvas'), 0);
+calculerScore();
+</script>
+</body>
+</html>
