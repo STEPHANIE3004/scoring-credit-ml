@@ -62,8 +62,8 @@
 <body>
 <header>
   <span style="font-size:26px">💳</span>
-  <div><h1>Scoring Crédit ML — Évaluation Bancaire</h1><div class="sub">Gradient Boosting · AUC=0.797 · Gini=0.594 · KS=0.498</div></div>
-  <div class="model-badge">🤖 Gradient Boosting · 5000 clients</div>
+  <div><h1>Scoring Crédit ML — Évaluation Bancaire</h1><div class="sub">Random Forest · XGBoost · SMOTE · AUC=0.804 · Gini=0.608 · KS=0.47 · German Credit UCI</div></div>
+  <div class="model-badge">🤖 Random Forest · German Credit UCI · 1000 clients</div>
 </header>
 
 <div class="main">
@@ -121,9 +121,9 @@
         <div class="risk-bar"><div class="risk-needle" id="risk-needle" style="left:5%"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted)"><span>FAIBLE</span><span>MOYEN</span><span>ÉLEVÉ</span></div>
         <div class="metrics">
-          <div class="metric"><div class="metric-val">0.797</div><div class="metric-name">AUC-ROC</div></div>
-          <div class="metric"><div class="metric-val">0.594</div><div class="metric-name">Gini</div></div>
-          <div class="metric"><div class="metric-val">0.498</div><div class="metric-name">KS-Stat</div></div>
+          <div class="metric"><div class="metric-val">0.804</div><div class="metric-name">AUC-ROC</div></div>
+          <div class="metric"><div class="metric-val">0.608</div><div class="metric-name">Gini</div></div>
+          <div class="metric"><div class="metric-val">0.47</div><div class="metric-name">KS-Stat</div></div>
         </div>
         <div id="risk-level" style="text-align:center;margin-top:12px;font-size:14px;font-weight:700;padding:6px;border-radius:6px">—</div>
       </div>
@@ -131,7 +131,7 @@
 
     <!-- Feature importance -->
     <div class="panel">
-      <div class="ptitle">🔍 Importance des variables — Gradient Boosting</div>
+      <div class="ptitle">🔍 Importance des variables — Random Forest (German Credit UCI · SMOTE)</div>
       <div id="feat-bars"></div>
     </div>
 
@@ -252,8 +252,4 @@ function randomClient() {
 
 // Init
 renderFeatBars();
-drawScoreArc(document.getElementById('score-canvas'), 0);
-calculerScore();
-</script>
-</body>
-</html>
+drawScoreArc(document.ge
