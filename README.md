@@ -95,13 +95,13 @@ Le pipeline garantit l'absence de data leakage : `fit` uniquement sur le train s
 
 ## ⚠️ Limites connues
 
-**Données synthétiques, pas de données réelles.** Le générateur reproduit les distributions statistiques documentées dans la littérature bancaire mais ne capture pas les corrélations complexes d'un vrai portefeuille (effets macroéconomiques, clusters régionaux, saisonnalité des défauts). Les AUC obtenus sont réalistes mais optimistes d'environ 5–10 points vs un modèle en production réelle.
-
 **Pas de calibration de probabilité.** La PD brute du modèle n'est pas calibrée par isotonic regression ou Platt scaling — nécessaire en banque pour que `PD = 5%` signifie réellement "5 clients sur 100 font défaut".
 
 **Pas de validation temporelle (backtesting).** Un vrai modèle Bâle II est validé sur des fenêtres temporelles out-of-time, pas seulement en train/test split. Cette étape nécessite des données historiques datées.
 
 **Interprétabilité limitée.** Random Forest et Gradient Boosting produisent les meilleures métriques mais sont des boîtes noires. En banque, la Logistic Regression est souvent préférée pour satisfaire aux exigences d'explicabilité réglementaire (SREP, EBA guidelines).
+
+**Taille du dataset.** Le German Credit UCI (1000 clients) est un benchmark académique reconnu mais reste petit pour un modèle en production réelle — un portefeuille bancaire comporte typiquement plusieurs dizaines de milliers de clients.
 
 ---
 
